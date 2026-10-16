@@ -1,124 +1,3 @@
-<?php
-session_start();
-
-$products = [
-    [
-        'name' => 'Sunday in the Garden',
-        'description' => 'Garden rose, sweet pea & seasonal greens',
-        'price' => 68,
-        'category' => 'bouquets',
-        'image' => 'assets/flower-menu.jpg',
-        'alt' => 'A colorful selection of fresh flowers at the Petal Ph flower shop',
-        'tag' => 'Bestseller',
-    ],
-    [
-        'name' => 'A Little Wild',
-        'description' => 'A flower-filled surprise, wrapped up with love',
-        'price' => 54,
-        'category' => 'seasonal',
-        'image' => 'assets/money-bouquet.jpg',
-        'alt' => 'A pink flower arrangement wrapped around a gift of banknotes',
-        'tag' => 'A little extra',
-    ],
-    [
-        'name' => 'The Golden Hour',
-        'description' => 'Velvety blue roses in a statement arrangement',
-        'price' => 72,
-        'category' => 'bouquets',
-        'image' => 'assets/blue-roses.jpg',
-        'alt' => 'A lush bouquet of blue and white roses',
-        'tag' => '',
-    ],
-    [
-        'name' => 'Flowers, Every Friday',
-        'description' => 'Classic ivory roses with a soft, lovely finish',
-        'price' => 48,
-        'category' => 'subscriptions',
-        'image' => 'assets/white-roses.jpg',
-        'alt' => 'A full bouquet of creamy white roses and little daisies',
-        'tag' => 'A lovely habit',
-    ],
-];
-
-function escape(string $value): string
-{
-    return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-}
-
-function redirectTo(string $section, string $category = 'all'): void
-{
-    $query = $category === 'all' ? '' : '?category=' . rawurlencode($category);
-    header('Location: ' . $query . '#' . $section);
-    exit;
-}
-
-$categories = ['all', 'bouquets', 'seasonal', 'subscriptions'];
-$category = isset($_GET['category']) && in_array($_GET['category'], $categories, true)
-    ? $_GET['category']
-    : 'all';
-
-if (!isset($_SESSION['cart']) || !is_array($_SESSION['cart'])) {
-    $_SESSION['cart'] = [];
-}
-
-if (!isset($_SESSION['csrf_token']) || !is_string($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $postedToken = is_string($_POST['csrf_token'] ?? null) ? $_POST['csrf_token'] : '';
-    if (!hash_equals($_SESSION['csrf_token'], $postedToken)) {
-        $_SESSION['flash'] = ['type' => 'error', 'message' => 'That request could not be verified. Please try again.', 'section' => 'shop'];
-        redirectTo('shop', $category);
-    }
-
-    $action = is_string($_POST['action'] ?? null) ? $_POST['action'] : '';
-    if ($action === 'add_to_bag' || $action === 'remove_from_bag') {
-        $postedProductId = is_string($_POST['product_id'] ?? null) ? $_POST['product_id'] : '';
-        $productId = filter_var($postedProductId, FILTER_VALIDATE_INT);
-        if ($productId === false || !array_key_exists($productId, $products)) {
-            $_SESSION['flash'] = ['type' => 'error', 'message' => 'That flower selection is no longer available.', 'section' => 'shop'];
-            redirectTo('shop', $category);
-        }
-
-        if ($action === 'add_to_bag') {
-            $_SESSION['cart'][$productId] = ($_SESSION['cart'][$productId] ?? 0) + 1;
-            $_SESSION['flash'] = ['type' => 'success', 'message' => $products[$productId]['name'] . ' added to your bag — lovely choice!', 'section' => 'shop'];
-        } else {
-            unset($_SESSION['cart'][$productId]);
-            $_SESSION['flash'] = ['type' => 'success', 'message' => 'Flower removed from your bag.', 'section' => 'bag'];
-        }
-        redirectTo($action === 'add_to_bag' ? 'shop' : 'bag', $category);
-    }
-
-    if ($action === 'newsletter') {
-        $postedEmail = is_string($_POST['email'] ?? null) ? trim($_POST['email']) : '';
-        $email = filter_var($postedEmail, FILTER_VALIDATE_EMAIL);
-        $recipient = getenv('SHOP_NEWSLETTER_EMAIL');
-        if ($email === false) {
-            $_SESSION['flash'] = ['type' => 'error', 'message' => 'Please enter a valid email address.', 'section' => 'newsletter'];
-        } elseif (!$recipient || !filter_var($recipient, FILTER_VALIDATE_EMAIL)) {
-            $_SESSION['flash'] = ['type' => 'error', 'message' => 'Our email list is not connected yet. Please contact the shop directly.', 'section' => 'newsletter'];
-        } elseif (mail($recipient, 'New Petal Ph newsletter signup', "Newsletter signup request from: {$email}", 'From: ' . $recipient . "\r\nReply-To: " . $email)) {
-            $_SESSION['flash'] = ['type' => 'success', 'message' => 'Thanks! Your signup request has been sent.', 'section' => 'newsletter'];
-        } else {
-            $_SESSION['flash'] = ['type' => 'error', 'message' => 'We could not send your signup just now. Please try again later.', 'section' => 'newsletter'];
-        }
-        redirectTo('newsletter', $category);
-    }
-
-    $_SESSION['flash'] = ['type' => 'error', 'message' => 'That action is not available.', 'section' => 'shop'];
-    redirectTo('shop', $category);
-}
-
-$flash = $_SESSION['flash'] ?? null;
-unset($_SESSION['flash']);
-$cart = $_SESSION['cart'];
-$cartCount = array_sum($cart);
-$visibleProducts = $category === 'all'
-    ? $products
-    : array_filter($products, static fn (array $product): bool => $product['category'] === $category);
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -199,8 +78,8 @@ $visibleProducts = $category === 'all'
                 <a class="transition hover:text-leaf" href="#our-story">Our little story</a>
                 <a class="transition hover:text-leaf" href="#newsletter">Say hello</a>
             </div>
-            <a href="#bag" class="flex h-10 items-center gap-2 rounded-full border border-ink/15 px-4 text-xs font-medium transition hover:bg-ink hover:text-paper" aria-label="Your bag, <?= $cartCount ?> <?= $cartCount === 1 ? 'item' : 'items' ?>">
-                Bag <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-leaf px-1 text-[10px] text-white"><?= $cartCount ?></span>
+            <a href="#bag" class="flex h-10 items-center gap-2 rounded-full border border-ink/15 px-4 text-xs font-medium transition hover:bg-ink hover:text-paper" aria-label="Your bag, 0 items">
+                Bag <span id="cart-count" class="flex h-5 min-w-5 items-center justify-center rounded-full bg-leaf px-1 text-[10px] text-white">0</span>
             </a>
         </nav>
         <nav class="border-t border-ink/10 px-6 py-4 md:hidden" aria-label="Mobile navigation">
@@ -279,39 +158,70 @@ $visibleProducts = $category === 'all'
                     </div>
                     <a href="#shop" class="w-fit border-b border-leaf pb-1 text-xs font-medium">See all the lovely things <span class="ml-2">↗</span></a>
                 </div>
-                <form method="get" action="#shop" class="mt-8 flex flex-wrap gap-2" aria-label="Filter flowers">
-                    <?php foreach (['all' => 'Everything', 'bouquets' => 'Bouquets', 'seasonal' => 'In season', 'subscriptions' => 'Subscriptions'] as $filter => $label): ?>
-                        <button class="rounded-full border px-4 py-2 text-xs font-medium transition <?= $category === $filter ? 'border-leaf text-ink' : 'border-transparent text-ink/55' ?>" type="submit" name="category" value="<?= escape($filter) ?>" aria-pressed="<?= $category === $filter ? 'true' : 'false' ?>"><?= escape($label) ?></button>
-                    <?php endforeach; ?>
-                </form>
+                <div class="mt-8 flex flex-wrap gap-2" aria-label="Filter flowers">
+                    <button class="filter-button rounded-full border border-leaf px-4 py-2 text-xs font-medium text-ink transition" type="button" data-filter="all" aria-pressed="true">Everything</button>
+                    <button class="filter-button rounded-full border border-transparent px-4 py-2 text-xs font-medium text-ink/55 transition" type="button" data-filter="bouquets" aria-pressed="false">Bouquets</button>
+                    <button class="filter-button rounded-full border border-transparent px-4 py-2 text-xs font-medium text-ink/55 transition" type="button" data-filter="seasonal" aria-pressed="false">In season</button>
+                    <button class="filter-button rounded-full border border-transparent px-4 py-2 text-xs font-medium text-ink/55 transition" type="button" data-filter="subscriptions" aria-pressed="false">Subscriptions</button>
+                </div>
                 <div id="product-grid" class="mt-7 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                    <?php foreach ($visibleProducts as $productId => $product): ?>
-                        <article class="product-card">
+                    <article class="product-card" data-product-id="sunday-garden" data-category="bouquets" data-name="Sunday in the Garden" data-price="68">
                             <div class="group relative aspect-[.82] overflow-hidden bg-paper">
-                                <img class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" src="<?= escape($product['image']) ?>" alt="<?= escape($product['alt']) ?>" loading="lazy" decoding="async">
-                                <?php if ($product['tag'] !== ''): ?>
-                                    <span class="absolute left-3 top-3 bg-paper px-3 py-2 text-[9px] font-semibold uppercase tracking-[.13em]"><?= escape($product['tag']) ?></span>
-                                <?php endif; ?>
-                                <form method="post" action="<?= $category === 'all' ? '#shop' : '?category=' . escape($category) . '#shop' ?>" class="absolute bottom-3 right-3">
-                                    <input type="hidden" name="csrf_token" value="<?= escape($_SESSION['csrf_token']) ?>">
-                                    <input type="hidden" name="action" value="add_to_bag">
-                                    <input type="hidden" name="product_id" value="<?= $productId ?>">
-                                    <button class="flex h-11 w-11 items-center justify-center rounded-full bg-paper text-xl transition hover:bg-ink hover:text-white" type="submit" aria-label="Add <?= escape($product['name']) ?> to your bag">+</button>
-                                </form>
+                                <img class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" src="assets/flower-menu.jpg" alt="A colorful selection of fresh flowers at the Petal Ph flower shop" loading="lazy" decoding="async">
+                                <span class="absolute left-3 top-3 bg-paper px-3 py-2 text-[9px] font-semibold uppercase tracking-[.13em]">Bestseller</span>
+                                <button class="add-to-bag absolute bottom-3 right-3 flex h-11 w-11 items-center justify-center rounded-full bg-paper text-xl transition hover:bg-ink hover:text-white" type="button" aria-label="Add Sunday in the Garden to your bag">+</button>
                             </div>
                             <div class="flex items-start justify-between gap-3 pt-4">
                                 <div>
-                                    <h3 class="font-serif text-lg"><?= escape($product['name']) ?></h3>
-                                    <p class="mt-1 text-[11px] leading-5 text-ink/60"><?= escape($product['description']) ?></p>
+                                    <h3 class="font-serif text-lg">Sunday in the Garden</h3>
+                                    <p class="mt-1 text-[11px] leading-5 text-ink/60">Garden rose, sweet pea &amp; seasonal greens</p>
                                 </div>
-                                <p class="pt-1 text-xs font-semibold">$<?= number_format($product['price']) ?></p>
+                                <p class="pt-1 text-xs font-semibold">$68</p>
                             </div>
-                        </article>
-                    <?php endforeach; ?>
+                    </article>
+                    <article class="product-card" data-product-id="a-little-wild" data-category="seasonal" data-name="A Little Wild" data-price="54">
+                        <div class="group relative aspect-[.82] overflow-hidden bg-paper">
+                            <img class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" src="assets/money-bouquet.jpg" alt="A pink flower arrangement wrapped around a gift of banknotes" loading="lazy" decoding="async">
+                            <span class="absolute left-3 top-3 bg-paper px-3 py-2 text-[9px] font-semibold uppercase tracking-[.13em]">A little extra</span>
+                            <button class="add-to-bag absolute bottom-3 right-3 flex h-11 w-11 items-center justify-center rounded-full bg-paper text-xl transition hover:bg-ink hover:text-white" type="button" aria-label="Add A Little Wild to your bag">+</button>
+                        </div>
+                        <div class="flex items-start justify-between gap-3 pt-4">
+                            <div>
+                                <h3 class="font-serif text-lg">A Little Wild</h3>
+                                <p class="mt-1 text-[11px] leading-5 text-ink/60">A flower-filled surprise, wrapped up with love</p>
+                            </div>
+                            <p class="pt-1 text-xs font-semibold">$54</p>
+                        </div>
+                    </article>
+                    <article class="product-card" data-product-id="golden-hour" data-category="bouquets" data-name="The Golden Hour" data-price="72">
+                        <div class="group relative aspect-[.82] overflow-hidden bg-paper">
+                            <img class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" src="assets/blue-roses.jpg" alt="A lush bouquet of blue and white roses" loading="lazy" decoding="async">
+                            <button class="add-to-bag absolute bottom-3 right-3 flex h-11 w-11 items-center justify-center rounded-full bg-paper text-xl transition hover:bg-ink hover:text-white" type="button" aria-label="Add The Golden Hour to your bag">+</button>
+                        </div>
+                        <div class="flex items-start justify-between gap-3 pt-4">
+                            <div>
+                                <h3 class="font-serif text-lg">The Golden Hour</h3>
+                                <p class="mt-1 text-[11px] leading-5 text-ink/60">Velvety blue roses in a statement arrangement</p>
+                            </div>
+                            <p class="pt-1 text-xs font-semibold">$72</p>
+                        </div>
+                    </article>
+                    <article class="product-card" data-product-id="friday-flowers" data-category="subscriptions" data-name="Flowers, Every Friday" data-price="48">
+                        <div class="group relative aspect-[.82] overflow-hidden bg-paper">
+                            <img class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" src="assets/white-roses.jpg" alt="A full bouquet of creamy white roses and little daisies" loading="lazy" decoding="async">
+                            <span class="absolute left-3 top-3 bg-paper px-3 py-2 text-[9px] font-semibold uppercase tracking-[.13em]">A lovely habit</span>
+                            <button class="add-to-bag absolute bottom-3 right-3 flex h-11 w-11 items-center justify-center rounded-full bg-paper text-xl transition hover:bg-ink hover:text-white" type="button" aria-label="Add Flowers, Every Friday to your bag">+</button>
+                        </div>
+                        <div class="flex items-start justify-between gap-3 pt-4">
+                            <div>
+                                <h3 class="font-serif text-lg">Flowers, Every Friday</h3>
+                                <p class="mt-1 text-[11px] leading-5 text-ink/60">Classic ivory roses with a soft, lovely finish</p>
+                            </div>
+                            <p class="pt-1 text-xs font-semibold">$48</p>
+                        </div>
+                    </article>
                 </div>
-                <?php if (($flash['section'] ?? '') === 'shop'): ?>
-                    <p class="mt-5 text-sm <?= ($flash['type'] ?? '') === 'error' ? 'text-red-800' : 'text-leaf' ?>" role="status"><?= escape($flash['message']) ?></p>
-                <?php endif; ?>
+                <p id="shop-message" class="mt-5 min-h-5 text-sm text-leaf" role="status" aria-live="polite"></p>
             </div>
         </section>
 
@@ -321,40 +231,12 @@ $visibleProducts = $category === 'all'
                     <p class="mb-3 text-[10px] font-semibold uppercase tracking-[.22em] text-leaf">Saved for a little later</p>
                     <h2 class="font-serif text-4xl tracking-[-.04em]">Your flower bag.</h2>
                 </div>
-                <p class="text-sm text-ink/60"><?= $cartCount ?> <?= $cartCount === 1 ? 'lovely thing' : 'lovely things' ?></p>
+                <p id="bag-count" class="text-sm text-ink/60">0 lovely things</p>
             </div>
-            <?php if ($cartCount === 0): ?>
-                <p class="mt-6 text-sm text-ink/65">Your bag is waiting for something lovely. <a class="border-b border-leaf text-ink" href="#shop">Find your flowers ↗</a></p>
-            <?php else: ?>
-                <div class="mt-6 divide-y divide-ink/10 border-y border-ink/10">
-                    <?php $subtotal = 0; ?>
-                    <?php foreach ($cart as $productId => $quantity): ?>
-                        <?php if (isset($products[$productId]) && is_int($quantity) && $quantity > 0): ?>
-                            <?php $product = $products[$productId]; $subtotal += $product['price'] * $quantity; ?>
-                            <div class="flex items-center justify-between gap-4 py-4">
-                                <div>
-                                    <h3 class="font-serif text-lg"><?= escape($product['name']) ?></h3>
-                                    <p class="mt-1 text-xs text-ink/60">Quantity: <?= $quantity ?> · $<?= number_format($product['price']) ?> each</p>
-                                </div>
-                                <div class="flex items-center gap-4">
-                                    <p class="text-sm font-semibold">$<?= number_format($product['price'] * $quantity) ?></p>
-                                    <form method="post" action="#bag">
-                                        <input type="hidden" name="csrf_token" value="<?= escape($_SESSION['csrf_token']) ?>">
-                                        <input type="hidden" name="action" value="remove_from_bag">
-                                        <input type="hidden" name="product_id" value="<?= $productId ?>">
-                                        <button class="text-xs underline underline-offset-4" type="submit" aria-label="Remove <?= escape($product['name']) ?> from your bag">Remove</button>
-                                    </form>
-                                </div>
-                            </div>
-                        <?php endif; ?>
-                    <?php endforeach; ?>
-                </div>
-                <p class="mt-5 text-right text-sm">Subtotal <strong class="ml-3">$<?= number_format($subtotal) ?></strong></p>
-                <p class="mt-2 text-right text-xs text-ink/55">Delivery and checkout can be arranged when you contact the shop.</p>
-            <?php endif; ?>
-            <?php if (($flash['section'] ?? '') === 'bag'): ?>
-                <p class="mt-5 text-sm <?= ($flash['type'] ?? '') === 'error' ? 'text-red-800' : 'text-leaf' ?>" role="status"><?= escape($flash['message']) ?></p>
-            <?php endif; ?>
+            <p id="bag-empty" class="mt-6 text-sm text-ink/65">Your bag is waiting for something lovely. <a class="border-b border-leaf text-ink" href="#shop">Find your flowers ↗</a></p>
+            <div id="bag-items" class="mt-6 hidden divide-y divide-ink/10 border-y border-ink/10"></div>
+            <p id="bag-subtotal" class="mt-5 hidden text-right text-sm">Subtotal <strong id="bag-total" class="ml-3">$0</strong></p>
+            <p id="bag-checkout-note" class="mt-2 hidden text-right text-xs text-ink/55">Delivery and checkout can be arranged when you contact the shop.</p>
         </section>
 
         <section id="our-story" class="mx-auto grid max-w-7xl gap-10 px-5 py-16 sm:py-20 md:grid-cols-2 md:items-center md:gap-20 md:px-10 md:py-24">
@@ -388,16 +270,13 @@ $visibleProducts = $category === 'all'
                 <p class="mt-3 text-[10px] font-semibold uppercase tracking-[.22em] text-leaf">The occasional happy note</p>
                 <h2 class="mt-3 font-serif text-4xl tracking-[-.04em] sm:text-5xl">A little sunshine in your inbox.</h2>
                 <p class="mx-auto mt-4 max-w-md text-sm leading-6 text-ink/65">New-season flowers, studio notes, and a good excuse to send somebody a bunch.</p>
-                <form method="post" action="#newsletter" class="mx-auto mt-7 flex max-w-md border-b border-ink/35 pb-2 text-left">
-                    <input type="hidden" name="csrf_token" value="<?= escape($_SESSION['csrf_token']) ?>">
-                    <input type="hidden" name="action" value="newsletter">
+                <form id="newsletter-form" class="mx-auto mt-7 flex max-w-md border-b border-ink/35 pb-2 text-left">
                     <label for="email" class="sr-only">Your email address</label>
                     <input id="email" name="email" type="email" autocomplete="email" placeholder="Your email address" required class="min-w-0 flex-1 bg-transparent py-2 text-sm outline-none placeholder:text-ink/45">
-                    <button class="pl-4 text-xs font-semibold uppercase tracking-[.12em] transition hover:text-leaf" type="submit">Count me in ↗</button>
+                    <button class="pl-4 text-xs font-semibold uppercase tracking-[.12em] transition hover:text-leaf" type="submit">Join via WhatsApp ↗</button>
                 </form>
-                <?php if (($flash['section'] ?? '') === 'newsletter'): ?>
-                    <p class="mt-3 text-xs <?= ($flash['type'] ?? '') === 'error' ? 'text-red-800' : 'text-leaf' ?>" role="status"><?= escape($flash['message']) ?></p>
-                <?php endif; ?>
+                <p class="mt-3 text-xs text-ink/55">Your email will be shared with Petal Ph via WhatsApp when you continue.</p>
+                <p id="newsletter-message" class="mt-3 min-h-5 text-xs text-leaf" role="status" aria-live="polite"></p>
             </div>
         </section>
     </main>
@@ -405,10 +284,11 @@ $visibleProducts = $category === 'all'
     <footer class="bg-ink px-5 py-8 text-paper md:px-10">
         <div class="mx-auto flex max-w-7xl flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <a href="#" class="font-serif text-xl tracking-[-.05em]"><span class="lowercase">petal</span><span class="font-sans text-butter">Ph</span></a>
-            <p class="text-[10px] tracking-wide text-paper/65">Made with care, and probably a little soil. © <?= date('Y') ?> Petal Ph.</p>
+            <p class="text-[10px] tracking-wide text-paper/65">Made with care, and probably a little soil. © <span id="copyright-year"></span> Petal Ph.</p>
             <a href="tel:+639385535979" class="text-xs text-paper/80 transition hover:text-white">Call or text +63 938 553 7979 ↗</a>
         </div>
     </footer>
 
+    <script src="assets/site.js" defer></script>
 </body>
 </html>
