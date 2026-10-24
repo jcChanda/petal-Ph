@@ -670,8 +670,10 @@
             const total = document.createElement('p');
             total.className = 'font-medium';
             total.textContent = `Total: ${priceFormatter.format(Number(order.subtotal))}`;
-            const track = element('button', 'mt-2 text-xs font-semibold underline underline-offset-4 hover:text-leaf', 'Track this order');
+            const track = document.createElement('button');
+            track.className = 'mt-2 text-xs font-semibold underline underline-offset-4 hover:text-leaf';
             track.type = 'button';
+            track.textContent = 'Track this order';
             track.addEventListener('click', () => {
                 document.getElementById('tracking-reference').value = order.id;
                 document.getElementById('tracking-email').value = signedInCustomerEmail;
