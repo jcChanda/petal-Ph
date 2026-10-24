@@ -441,11 +441,23 @@
     const customerReminderNotificationMessage = document.getElementById('customer-reminder-notification-message');
     let accountMode = 'sign-in';
     let knownCustomerOrderStatuses = null;
+    let accountIsSignedIn = false;
     let signedInCustomerEmail = '';
     let accountStatusReady = false;
     let savedRelationshipStartDate = null;
     let activeReminderKey = null;
     let reminderDismissed = false;
+
+    function updateAccountButtonLabels() {
+        const label = accountIsSignedIn ? 'Profile' : 'Sign in';
+        const accountButton = document.getElementById('account-button');
+        const mobileAccountButton = document.getElementById('mobile-account-button');
+        document.getElementById('account-button-label').textContent = label;
+        document.getElementById('mobile-account-button-label').textContent = label;
+        accountButton.setAttribute('aria-label', accountIsSignedIn ? 'Open profile and account' : 'Sign in');
+        accountButton.title = label;
+        mobileAccountButton.setAttribute('aria-label', accountIsSignedIn ? 'Open profile and account' : 'Sign in');
+    }
 
     const today = new Date();
     const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -558,6 +570,8 @@
         customerOrderHistory.replaceChildren();
         customerOrderHistoryMessage.textContent = '';
         customerReminderSettings.classList.add('hidden');
+        accountIsSignedIn = false;
+        updateAccountButtonLabels();
         signedInCustomer = false;
         savedRelationshipStartDate = null;
         refreshDateReminders();
@@ -576,6 +590,8 @@
                 renderBag();
                 return;
             }
+            accountIsSignedIn = true;
+            updateAccountButtonLabels();
             accountMessage.textContent = data.user.role === 'admin'
                 ? `Signed in as shop admin: ${data.user.email}.`
                 : `Signed in as ${data.user.email}.`;
@@ -709,6 +725,9 @@
     }
 
     function openAccountDialog() {
+        if (!accountIsSignedIn && accountMode !== 'sign-in') {
+            document.querySelector('.account-mode[data-mode="sign-in"]').click();
+        }
         accountMessage.textContent = '';
         accountDialog.showModal();
         refreshAccountStatus();
@@ -795,6 +814,8 @@
             accountAuthPanel.classList.add('hidden');
             knownCustomerOrderStatuses = null;
             accountLogout.classList.remove('hidden');
+            accountIsSignedIn = true;
+            updateAccountButtonLabels();
             adminDashboardLink.classList.toggle('hidden', data.user.role !== 'admin');
             signedInCustomer = data.user.role === 'customer';
             signedInCustomerEmail = signedInCustomer ? data.user.email : '';
@@ -881,6 +902,8 @@
             accountOrderNotificationsList.replaceChildren();
             knownCustomerOrderStatuses = null;
             signedInCustomer = false;
+            accountIsSignedIn = false;
+            updateAccountButtonLabels();
             signedInCustomerEmail = '';
             accountStatusReady = true;
             renderBag();
