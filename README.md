@@ -1,39 +1,8 @@
 # Petal Ph
 
-Petal Ph is served as a single FastAPI application so the storefront and account API share one origin.
+Petal Ph's storefront and shop dashboard are HTML pages styled with CSS and enhanced with JavaScript. The FastAPI backend provides secure sign-in, live inventory, checkout, order tracking, and admin features.
 
-Do not open `index.html` or `admin.html` directly as a `file://` URL. Authentication, product inventory, orders, and the dashboard API require the FastAPI server. Opening `/admin` through a local file preview is unsupported; it will show a message instead of navigating to a blocked file path. For a quick local test, run the FastAPI backend in development mode; it uses a local SQLite database. Production deployment continues to use PostgreSQL.
-
-## Run locally on Windows
-
-1. Install Python 3.11 or newer and make sure the Python launcher (`py`) is available in PowerShell.
-2. From the project folder, create a virtual environment and install the dependencies:
-
-   ```powershell
-   py -3 -m venv .venv
-   .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-   ```
-
-3. Stop any static preview/Live Server that is already using port 5500. In VS Code, press **F5** and select **Petal Ph (local on 5500)**. The backend starts without an interactive prompt and prints the local admin password in the VS Code terminal. The generated password is saved in `%LOCALAPPDATA%\PetalPh\local-admin-password`, outside the project and Git, and reused on later starts, so restarting the backend will not unexpectedly change it. If you lose the password, read that file in PowerShell with `Get-Content "$env:LOCALAPPDATA\PetalPh\local-admin-password"` or remove it to generate a new one on the next start. To use your own password instead, define `ADMIN_PASSWORD` in the VS Code process environment before launching the task; it must contain at least 16 characters. VS Code opens the admin sign-in flow at `http://127.0.0.1:5500/admin`; the storefront is also available at `http://127.0.0.1:5500`.
-
-   To start the backend manually instead, configure the local admin account in PowerShell. Choose a unique admin password with at least 16 characters:
-
-   ```powershell
-   $env:ENVIRONMENT = "development"
-   $env:ADMIN_EMAIL = "petalphofficial@gmail.com"
-   $securePassword = Read-Host "Choose a local admin password" -AsSecureString
-   $env:ADMIN_PASSWORD = [System.Net.NetworkCredential]::new("", $securePassword).Password
-   $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
-   $secretBytes = New-Object byte[] 32
-   $rng.GetBytes($secretBytes)
-   $env:JWT_SECRET = [Convert]::ToBase64String($secretBytes)
-   .\.venv\Scripts\python.exe -m uvicorn backend:app --reload --host 127.0.0.1 --port 5500
-   ```
-
-   Development mode uses `petal_ph_dev.db` in the project folder and automatically creates the admin account. The database and environment secrets are excluded from Git. Keep this PowerShell window open while testing.
-4. Open `http://127.0.0.1:5500/admin`; if you are not signed in, the dashboard sends you to the storefront admin sign-in form. Sign in as `petalphofficial@gmail.com` with the temporary password printed in the terminal (or your configured password). To make a test customer account, choose **Account → Create account** and register with an email you control and a password of at least 12 characters.
-
-The local SQLite database is for development/testing only. Customer accounts created locally are separate from production accounts. Do not use development mode for a public deployment.
+In VS Code, press **F5** and select **Petal Ph (hosted HTML site)**. Enter the deployed Petal Ph URL when prompted to open the hosted storefront in Chrome. Opening the HTML files directly from disk only provides a static preview; backend features require the hosted site.
 
 ## Deploy to Render
 
