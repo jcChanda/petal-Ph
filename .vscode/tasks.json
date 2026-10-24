@@ -1,0 +1,29 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Start Petal Ph backend on 5500",
+            "type": "process",
+            "command": "powershell.exe",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}\\.vscode\\run-local.ps1"
+            ],
+            "isBackground": true,
+            "problemMatcher": {
+                "owner": "petal-ph",
+                "pattern": {
+                    "regexp": "^$"
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "Starting Petal Ph backend on port 5500",
+                    "endsPattern": "Uvicorn running on http://127\\.0\\.0\\.1:5500"
+                }
+            }
+        }
+    ]
+}

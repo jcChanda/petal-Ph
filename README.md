@@ -2,7 +2,20 @@
 
 Petal Ph's storefront and shop dashboard are HTML pages styled with CSS and enhanced with JavaScript. The FastAPI backend provides secure sign-in, live inventory, checkout, order tracking, and admin features.
 
-In VS Code, press **F5** and select **Petal Ph (hosted HTML site)**. Enter the deployed Petal Ph URL when prompted to open the hosted storefront in Chrome. Opening the HTML files directly from disk only provides a static preview; backend features require the hosted site.
+## Run locally on Windows
+
+1. Install Python 3.11 or newer.
+2. From the project folder, create a virtual environment and install dependencies:
+
+   ```powershell
+   py -3 -m venv .venv
+   .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+   ```
+
+3. In VS Code, press **F5** and select **Petal Ph (local backend)**. This starts the FastAPI backend and opens the HTML admin dashboard at `http://127.0.0.1:5500/admin`. The local admin email is `petalphofficial@gmail.com`; the generated password is printed in the VS Code terminal and saved outside the project at `%LOCALAPPDATA%\PetalPh\local-admin-password`.
+4. Open `http://127.0.0.1:5500` for the storefront. Keep the VS Code task terminal running while using the local site.
+
+Opening `index.html` or `admin.html` directly from disk only shows a static preview; the real admin dashboard, login, and order features require the backend.
 
 ## Deploy to Render
 

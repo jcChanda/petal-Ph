@@ -7,17 +7,10 @@
         {
             "type": "pwa-chrome",
             "request": "launch",
-            "name": "Petal Ph (hosted HTML site)",
-            "url": "${input:petalPhSiteUrl}",
+            "name": "Petal Ph (local backend)",
+            "url": "http://127.0.0.1:5500/admin",
+            "preLaunchTask": "Start Petal Ph backend on 5500",
             "webRoot": "${workspaceFolder}"
-        }
-    ],
-    "inputs": [
-        {
-            "id": "petalPhSiteUrl",
-            "type": "promptString",
-            "description": "Enter the hosted Petal Ph URL",
-            "default": "https://"
         }
     ]
 }
