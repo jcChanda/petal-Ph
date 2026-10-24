@@ -411,7 +411,7 @@
     document.getElementById('dashboard-signout').addEventListener('click', async () => {
         try {
             await apiRequest('/api/auth/logout', { method: 'POST' });
-            window.location.replace('/');
+            window.location.replace('/petal-Ph/');
         } catch (error) {
             dashboardMessage.textContent = error.message;
         }
