@@ -448,15 +448,16 @@
     let activeReminderKey = null;
     let reminderDismissed = false;
 
-    function updateAccountButtonLabels() {
-        const label = accountIsSignedIn ? 'Profile' : 'Sign in';
+    function updateAccountButtons() {
         const accountButton = document.getElementById('account-button');
         const mobileAccountButton = document.getElementById('mobile-account-button');
-        document.getElementById('account-button-label').textContent = label;
-        document.getElementById('mobile-account-button-label').textContent = label;
-        accountButton.setAttribute('aria-label', accountIsSignedIn ? 'Open profile and account' : 'Sign in');
-        accountButton.title = label;
-        mobileAccountButton.setAttribute('aria-label', accountIsSignedIn ? 'Open profile and account' : 'Sign in');
+        const signInButton = document.getElementById('sign-in-button');
+        const mobileSignInButton = document.getElementById('mobile-sign-in-button');
+        accountButton.classList.toggle('hidden', !accountIsSignedIn);
+        mobileAccountButton.classList.toggle('hidden', !accountIsSignedIn);
+        mobileAccountButton.classList.toggle('inline-flex', accountIsSignedIn);
+        signInButton.classList.toggle('hidden', accountIsSignedIn);
+        mobileSignInButton.classList.toggle('hidden', accountIsSignedIn);
     }
 
     const today = new Date();
@@ -571,7 +572,7 @@
         customerOrderHistoryMessage.textContent = '';
         customerReminderSettings.classList.add('hidden');
         accountIsSignedIn = false;
-        updateAccountButtonLabels();
+        updateAccountButtons();
         signedInCustomer = false;
         savedRelationshipStartDate = null;
         refreshDateReminders();
@@ -591,7 +592,7 @@
                 return;
             }
             accountIsSignedIn = true;
-            updateAccountButtonLabels();
+            updateAccountButtons();
             accountMessage.textContent = data.user.role === 'admin'
                 ? `Signed in as shop admin: ${data.user.email}.`
                 : `Signed in as ${data.user.email}.`;
@@ -724,10 +725,14 @@
         refreshDateReminders();
     }
 
-    function openAccountDialog() {
-        if (!accountIsSignedIn && accountMode !== 'sign-in') {
+    function openSignInDialog() {
+        if (accountMode !== 'sign-in') {
             document.querySelector('.account-mode[data-mode="sign-in"]').click();
         }
+        openAccountDialog();
+    }
+
+    function openAccountDialog() {
         accountMessage.textContent = '';
         accountDialog.showModal();
         refreshAccountStatus();
@@ -735,6 +740,8 @@
 
     document.getElementById('account-button').addEventListener('click', openAccountDialog);
     document.getElementById('mobile-account-button').addEventListener('click', openAccountDialog);
+    document.getElementById('sign-in-button').addEventListener('click', openSignInDialog);
+    document.getElementById('mobile-sign-in-button').addEventListener('click', openSignInDialog);
     document.getElementById('account-close').addEventListener('click', () => accountDialog.close());
 
     checkoutSignInButton.addEventListener('click', async () => {
@@ -744,10 +751,7 @@
             checkoutForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
             return;
         }
-        if (accountMode !== 'sign-in') {
-            document.querySelector('.account-mode[data-mode="sign-in"]').click();
-        }
-        openAccountDialog();
+        openSignInDialog();
         accountMessage.textContent = 'Sign in or create a customer account to continue to checkout.';
         accountEmail.focus();
     });
@@ -815,7 +819,7 @@
             knownCustomerOrderStatuses = null;
             accountLogout.classList.remove('hidden');
             accountIsSignedIn = true;
-            updateAccountButtonLabels();
+            updateAccountButtons();
             adminDashboardLink.classList.toggle('hidden', data.user.role !== 'admin');
             signedInCustomer = data.user.role === 'customer';
             signedInCustomerEmail = signedInCustomer ? data.user.email : '';
@@ -903,7 +907,7 @@
             knownCustomerOrderStatuses = null;
             signedInCustomer = false;
             accountIsSignedIn = false;
-            updateAccountButtonLabels();
+            updateAccountButtons();
             signedInCustomerEmail = '';
             accountStatusReady = true;
             renderBag();
