@@ -830,9 +830,7 @@
         accountMessage.textContent = 'Connecting securely...';
         try {
             const response = await fetch(
-                accountMode === 'sign-up'
-                    ? '/api/auth/register'
-                    : accountMode === 'admin' ? '/api/admin/login' : '/api/auth/login',
+                accountMode === 'sign-up' ? '/api/auth/register' : '/api/auth/login',
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
