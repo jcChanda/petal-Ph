@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f4ecea">
+    <title>Shop dashboard — Petal Ph</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: {
+            colors: { paper: '#f4ecea', ink: '#4c3640', leaf: '#a8546e', blush: '#f3dce1' },
+            fontFamily: { sans: ['DM Sans', 'sans-serif'], serif: ['Playfair Display', 'serif'] }
+        } } };
+    </script>
+</head>
+<body class="bg-paper font-sans text-ink antialiased">
+    <header class="border-b border-ink/10 bg-white/70">
+        <div class="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 md:px-10">
+            <div>
+                <p class="text-[10px] font-semibold uppercase tracking-[.22em] text-leaf">Petal Ph</p>
+                <h1 class="font-serif text-3xl">Shop dashboard</h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <a class="text-xs underline underline-offset-4 hover:text-leaf" href="index.html">View storefront</a>
+                <button id="dashboard-signout" class="rounded-full border border-ink/20 px-4 py-2 text-xs hover:bg-ink hover:text-white" type="button">Sign out</button>
+            </div>
+        </div>
+    </header>
+    <main class="mx-auto max-w-7xl px-5 py-10 md:px-10">
+        <p id="dashboard-message" class="mb-6 min-h-5 text-sm text-leaf" role="status" aria-live="polite"></p>
+        <section aria-labelledby="orders-heading">
+            <div class="flex flex-wrap items-end justify-between gap-4">
+                <div>
+                    <p class="mb-2 text-[10px] font-semibold uppercase tracking-[.2em] text-leaf">Customer requests</p>
+                    <h2 id="orders-heading" class="font-serif text-3xl">Orders</h2>
+                </div>
+                <button id="refresh-orders" class="rounded-full border border-ink/20 px-4 py-2 text-xs hover:bg-white" type="button">Refresh orders</button>
+            </div>
+            <div id="orders-list" class="mt-5 grid gap-4"></div>
+            <p id="order-notification" class="mt-4 hidden border border-leaf/30 bg-white/70 p-4 text-sm text-leaf" role="status" aria-live="polite"></p>
+        </section>
+
+        <section class="mt-16" aria-labelledby="products-heading">
+            <div>
+                <p class="mb-2 text-[10px] font-semibold uppercase tracking-[.2em] text-leaf">Storefront inventory</p>
+                <h2 id="products-heading" class="font-serif text-3xl">Products</h2>
+            </div>
+            <form id="product-form" class="mt-5 grid gap-4 border border-ink/10 bg-white/70 p-5 sm:grid-cols-2 lg:grid-cols-3">
+                <div>
+                    <label class="mb-2 block text-xs font-medium" for="product-name">Product name</label>
+                    <input id="product-name" class="w-full border border-ink/15 bg-white px-3 py-2.5 text-sm" minlength="2" maxlength="100" required>
+                </div>
+                <div>
+                    <label class="mb-2 block text-xs font-medium" for="product-category">Category</label>
+                    <select id="product-category" class="w-full border border-ink/15 bg-white px-3 py-2.5 text-sm">
+                        <option value="bouquets">Bouquets</option>
+                        <option value="seasonal">In season</option>
+                        <option value="subscriptions">Subscriptions</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="mb-2 block text-xs font-medium" for="product-price">Price (PHP ₱)</label>
+                    <input id="product-price" class="w-full border border-ink/15 bg-white px-3 py-2.5 text-sm" type="number" min="0.01" max="1000000" step="0.01" required>
+                </div>
+                <div class="sm:col-span-2 lg:col-span-3">
+                    <label class="mb-2 block text-xs font-medium" for="product-description">Description</label>
+                    <textarea id="product-description" class="w-full border border-ink/15 bg-white px-3 py-2.5 text-sm" rows="2" minlength="3" maxlength="500" required></textarea>
+                </div>
+                <div>
+                    <label class="mb-2 block text-xs font-medium" for="product-image">Product image</label>
+                    <select id="product-image" class="w-full border border-ink/15 bg-white px-3 py-2.5 text-sm">
+                        <option value="assets/a-little-wild.png">A Little Wild photo</option>
+                        <option value="assets/berry-bouquet.png">Berry bouquet</option>
+                        <option value="assets/blair-pastel-bouquet.png">Blair pastel bouquet</option>
+                        <option value="assets/bouquet-pink.png">Pink bouquet</option>
+                        <option value="assets/blue-flower-hearts.png">Blue flower hearts</option>
+                        <option value="assets/blue-roses.png">Blue roses (PNG)</option>
+                        <option value="assets/blue-roses.jpg">Blue roses</option>
+                        <option value="assets/bridal-bouquet.png">Bridal bouquet</option>
+                        <option value="assets/ecuadorian-roses.png">Ecuadorian roses</option>
+                        <option value="assets/flower-menu.jpg">Flower menu bouquet</option>
+                        <option value="assets/flower-menu.png">Flower menu (PNG)</option>
+                        <option value="assets/lady-monroe.png">Lady Monroe</option>
+                        <option value="assets/little-wild-bouquet.png">A Little Wild</option>
+                        <option value="assets/money-bouquet.jpg">Money bouquet</option>
+                        <option value="assets/money-bouquet.png">Money bouquet (PNG)</option>
+                        <option value="assets/petal-ph-yellow-bouquet.jpg">Yellow bouquet</option>
+                        <option value="assets/petal-ph-yellow-bouquet.png">Yellow bouquet (PNG)</option>
+                        <option value="assets/red-gift-bouquet.png">Red gift bouquet</option>
+                        <option value="assets/red-rose-heart-box.png">Red rose heart box</option>
+                        <option value="assets/signature-bouquet.jpg">Signature bouquet</option>
+                        <option value="assets/signature-bouquet.png">Signature bouquet (PNG)</option>
+                        <option value="assets/sunday-in-the-garden.png">Sunday in the Garden</option>
+                        <option value="assets/sunny-days-subscription.png">Sunny Days subscription</option>
+                        <option value="assets/white-roses.jpg">White roses</option>
+                        <option value="assets/white-roses.png">White roses (PNG)</option>
+                    </select>
+                    <img id="product-image-preview" class="mt-3 h-32 w-28 border border-ink/10 object-cover" src="assets/bouquet-pink.png" alt="Selected product image preview">
+                    <div class="mt-3 space-y-2">
+                        <label class="block text-xs font-medium" for="product-image-upload">Or upload a new product photo</label>
+                        <input id="product-image-upload" class="block w-full text-xs file:mr-3 file:border-0 file:bg-ink file:px-3 file:py-2 file:text-xs file:font-medium file:text-white" type="file" accept="image/png,image/jpeg,image/webp">
+                        <button id="upload-product-image" class="rounded-full border border-ink/20 px-4 py-2 text-xs transition hover:bg-white disabled:opacity-60" type="button">Upload photo</button>
+                        <p class="text-[10px] leading-4 text-ink/55">PNG, JPEG, or WebP · up to 5 MB. The photo is named after the product and selected automatically.</p>
+                        <p id="product-image-upload-message" class="min-h-4 text-xs text-leaf" role="status" aria-live="polite"></p>
+                    </div>
+                </div>
+                <div class="flex items-end">
+                    <button id="add-product-button" class="w-full rounded-full bg-ink px-5 py-3 text-xs font-semibold uppercase tracking-[.12em] text-white transition hover:bg-leaf" type="submit">Add product</button>
+                </div>
+            </form>
+            <div id="products-list" class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
+        </section>
+    </main>
+    <script src="assets/admin.js" defer></script>
+</body>
+</html>
