@@ -615,14 +615,14 @@
         } catch (error) {
             accountStatusReady = true;
             renderBag();
+            accountAuthPanel.classList.remove('hidden');
+            customerProfile.classList.add('hidden');
+            accountLogout.classList.add('hidden');
             if (error.status === 401) {
-                accountAuthPanel.classList.remove('hidden');
-                customerProfile.classList.add('hidden');
-                accountLogout.classList.add('hidden');
+                accountMessage.textContent = error.message;
+            } else {
+                accountMessage.textContent = 'Could not check your sign-in status. You can still try signing in; if it fails, check that the account service is running.';
             }
-            accountMessage.textContent = error.status === 401
-                ? error.message
-                : 'Account service is not available. Please try again later.';
             customerOrderHistoryMessage.textContent = 'Could not load your purchase history.';
             console.error('Petal Ph could not check the signed-in account.', error);
         }
