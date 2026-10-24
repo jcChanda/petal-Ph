@@ -41,7 +41,7 @@ Image.MAX_IMAGE_PIXELS = MAX_PRODUCT_IMAGE_PIXELS
 
 class Settings:
     def __init__(self) -> None:
-        self.environment = os.environ.get("ENVIRONMENT", "production").lower()
+        self.environment = os.environ.get("ENVIRONMENT", "development").lower()
         self.database_url = os.environ.get(
             "DATABASE_URL",
             "sqlite:///petal_ph_dev.db" if self.environment == "development" else "",
@@ -53,7 +53,10 @@ class Settings:
             "ADMIN_EMAIL",
             "petalphofficial@gmail.com" if self.environment == "development" else "",
         ).strip().lower()
-        self.admin_password = os.environ.get("ADMIN_PASSWORD", "")
+        self.admin_password = os.environ.get(
+            "ADMIN_PASSWORD",
+            "PetalPhAdmin2026!Secure" if self.environment == "development" else "",
+        )
 
     def validate(self) -> None:
         is_sqlite = self.database_url.startswith("sqlite:///")
