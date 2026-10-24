@@ -1,11 +1,11 @@
 (() => {
-  const KEY = 'petal_ph_db_v2';
+  const KEY = 'petal_ph_db_v3';
   const SESSION = 'petal_ph_session';
   function load() {
     let d = null;
     try { d = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch(e){}
     if (!d) {
-      d = { users: [{email:'petalphofficial@gmail.com',password:'PetalPhAdmin2026!Secure',role:'admin'}],
+      d = { users: [{email:'petalphofficial@gmail.com',password:'admin1234567891235',role:'admin'}],
         products: [
           {id:'sunday-garden',name:'Sunday in the Garden',description:'Garden rose, sweet pea & seasonal greens',category:'bouquets',price:68,image:'assets/flower-menu.jpg',available:true,created_at:new Date().toISOString()},
           {id:'a-little-wild',name:'A Little Wild',description:'A flower-filled surprise, wrapped up with love',category:'seasonal',price:54,image:'assets/money-bouquet.jpg',available:true,created_at:new Date().toISOString()},

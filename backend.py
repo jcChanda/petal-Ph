@@ -55,7 +55,7 @@ class Settings:
         ).strip().lower()
         self.admin_password = os.environ.get(
             "ADMIN_PASSWORD",
-            "PetalPhAdmin2026!Secure" if self.environment == "development" else "",
+            "admin1234567891235" if self.environment == "development" else "",
         )
 
     def validate(self) -> None:
