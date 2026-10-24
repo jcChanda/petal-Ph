@@ -33,6 +33,7 @@
     const placeOrderButton = document.getElementById('place-order-button');
     const bag = {};
     let signedInCustomer = false;
+    let signedInAdmin = false;
     let currentFilter = 'all';
     let messageTimeout;
 
@@ -186,7 +187,12 @@
         checkoutForm.classList.toggle('hidden', itemCount === 0 || !signedInCustomer);
         bagCheckoutNote.textContent = signedInCustomer
             ? 'Choose delivery and payment details below to send your order to Petal Ph.'
-            : 'Sign in or create a customer account before continuing to checkout.';
+            : signedInAdmin
+                ? 'You’re signed in as the shop admin. Orders require a customer account; sign in with a customer account or create one.'
+                : 'Sign in or create a customer account before continuing to checkout.';
+        checkoutSignInButton.textContent = signedInAdmin
+            ? 'Sign in with customer account'
+            : 'Sign in to continue checkout';
         document.getElementById('bag-total').textContent = formatPrice(subtotal);
 
         for (const [id, quantity] of Object.entries(bag)) {
@@ -286,11 +292,10 @@
     checkoutForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         if (!signedInCustomer) {
-            if (accountMode !== 'sign-in') {
-                document.querySelector('.account-mode[data-mode="sign-in"]').click();
-            }
-            openAccountDialog();
-            accountMessage.textContent = 'Sign in or create a customer account before placing your order.';
+            openSignInDialog();
+            accountMessage.textContent = signedInAdmin
+                ? 'Shop admin accounts cannot place orders. Sign in with a customer account or create one.'
+                : 'Sign in or create a customer account before placing your order.';
             return;
         }
         if (!checkoutForm.reportValidity()) return;
@@ -572,6 +577,7 @@
         customerOrderHistoryMessage.textContent = '';
         customerReminderSettings.classList.add('hidden');
         accountIsSignedIn = false;
+        signedInAdmin = false;
         updateAccountButtons();
         signedInCustomer = false;
         savedRelationshipStartDate = null;
@@ -592,6 +598,7 @@
                 return;
             }
             accountIsSignedIn = true;
+            signedInAdmin = data.user.role === 'admin';
             updateAccountButtons();
             accountMessage.textContent = data.user.role === 'admin'
                 ? `Signed in as shop admin: ${data.user.email}.`
@@ -751,6 +758,38 @@
             checkoutForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
             return;
         }
+        if (signedInAdmin) {
+            checkoutSignInButton.disabled = true;
+            try {
+                const response = await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'same-origin'
+                });
+                await readAuthResponse(response);
+                signedInAdmin = false;
+                accountIsSignedIn = false;
+                signedInCustomer = false;
+                signedInCustomerEmail = '';
+                accountStatusReady = true;
+                accountAuthPanel.classList.remove('hidden');
+                accountLogout.classList.add('hidden');
+                adminDashboardLink.classList.add('hidden');
+                accountOrderNotifications.classList.add('hidden');
+                accountOrderNotificationsList.replaceChildren();
+                customerProfile.classList.add('hidden');
+                customerReminderSettings.classList.add('hidden');
+                savedRelationshipStartDate = null;
+                updateAccountButtons();
+                refreshDateReminders();
+                renderBag();
+            } catch (error) {
+                accountMessage.textContent = error.message || 'Could not switch from the shop admin account.';
+                console.error('Petal Ph could not switch from the shop admin account.', error);
+                return;
+            } finally {
+                checkoutSignInButton.disabled = false;
+            }
+        }
         openSignInDialog();
         accountMessage.textContent = 'Sign in or create a customer account to continue to checkout.';
         accountEmail.focus();
@@ -788,7 +827,9 @@
         accountMessage.textContent = 'Connecting securely...';
         try {
             const response = await fetch(
-                accountMode === 'sign-up' ? '/api/auth/register' : '/api/auth/login',
+                accountMode === 'sign-up'
+                    ? '/api/auth/register'
+                    : accountMode === 'admin' ? '/api/admin/login' : '/api/auth/login',
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -822,6 +863,7 @@
             updateAccountButtons();
             adminDashboardLink.classList.toggle('hidden', data.user.role !== 'admin');
             signedInCustomer = data.user.role === 'customer';
+            signedInAdmin = data.user.role === 'admin';
             signedInCustomerEmail = signedInCustomer ? data.user.email : '';
             accountStatusReady = true;
             renderBag();
@@ -907,6 +949,7 @@
             knownCustomerOrderStatuses = null;
             signedInCustomer = false;
             accountIsSignedIn = false;
+            signedInAdmin = false;
             updateAccountButtons();
             signedInCustomerEmail = '';
             accountStatusReady = true;

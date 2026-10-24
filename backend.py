@@ -498,9 +498,7 @@ def register(request: Request, credentials: Credentials, response: Response) -> 
     return {"user": {"email": result[0], "role": result[1]}}
 
 
-@app.post("/api/auth/login")
-@app.state.limiter.limit("5/minute")
-def login(request: Request, credentials: Credentials, response: Response) -> dict[str, dict[str, str]]:
+def authenticate_credentials(credentials: Credentials) -> tuple[str, str]:
     with connect_database() as connection:
         user = connection.execute(
             "SELECT email, password_hash, role FROM users WHERE email = %s",
@@ -508,8 +506,26 @@ def login(request: Request, credentials: Credentials, response: Response) -> dic
         ).fetchone()
     if user is None or not PASSWORD_HASHER.verify(credentials.password, user[1]):
         raise HTTPException(status_code=401, detail="Email or password is incorrect.")
-    set_session_cookie(response, user[0], user[2])
-    return {"user": {"email": user[0], "role": user[2]}}
+    return user[0], user[2]
+
+
+@app.post("/api/auth/login")
+@app.state.limiter.limit("5/minute")
+def login(request: Request, credentials: Credentials, response: Response) -> dict[str, dict[str, str]]:
+    email, role = authenticate_credentials(credentials)
+    set_session_cookie(response, email, role)
+    return {"user": {"email": email, "role": role}}
+
+
+@app.post("/api/admin/login")
+@app.state.limiter.limit("5/minute")
+def admin_login(request: Request, credentials: Credentials, response: Response) -> dict[str, dict[str, str]]:
+    email, role = authenticate_credentials(credentials)
+    if role != "admin":
+        raise HTTPException(status_code=403, detail="This account is not authorized for admin access.")
+
+    set_session_cookie(response, email, role)
+    return {"user": {"email": email, "role": role}}
 
 
 @app.post("/api/auth/logout")
