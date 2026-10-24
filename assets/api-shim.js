@@ -139,6 +139,35 @@
       return jsonRes({id:oid,status:body.status});
     }
 
+    // order tracking
+    if (method==='POST' && path==='/orders/track') {
+      const o=d.orders.find(x=>x.id===body.order_reference && x.customer_email===String(body.customer_email||'').toLowerCase());
+      if(!o) return jsonRes({detail:'Your order could not be found.'},404);
+      return jsonRes({order:o});
+    }
+
+    // customer orders
+    if (method==='GET' && path==='/customer/orders') {
+      if(!user||user.role!=='customer') return jsonRes({detail:'Please sign in.'},401);
+      return jsonRes({orders: d.orders.filter(o=>o.customer_email===user.email)});
+    }
+    if (method==='GET' && path==='/customer/order-notifications') {
+      if(!user||user.role!=='customer') return jsonRes({detail:'Please sign in.'},401);
+      const notifs=d.orders.filter(o=>o.customer_email===user.email).map(o=>({id:o.id,status:o.status}));
+      return jsonRes({notifications:notifs});
+    }
+    if (method==='GET' && path==='/customer/reminders') {
+      if(!user||user.role!=='customer') return jsonRes({detail:'Please sign in.'},401);
+      const stored = localStorage.getItem('petal_reminder_'+user.email);
+      return jsonRes({relationship_start_date: stored||null});
+    }
+    if (method==='PUT' && path==='/customer/reminders') {
+      if(!user||user.role!=='customer') return jsonRes({detail:'Please sign in.'},401);
+      if(body.relationship_start_date) localStorage.setItem('petal_reminder_'+user.email, body.relationship_start_date);
+      else localStorage.removeItem('petal_reminder_'+user.email);
+      return jsonRes({relationship_start_date: body.relationship_start_date||null});
+    }
+
     return jsonRes({detail:'Not found'},404);
   };
 })();
