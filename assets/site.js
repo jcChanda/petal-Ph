@@ -552,9 +552,6 @@
         try {
             data = JSON.parse(responseText);
         } catch {
-            if (window.location.protocol === 'file:') {
-                throw new Error('Sign-in is unavailable in the local file preview. Open the deployed Petal Ph site or run its backend.');
-            }
             const responseUrl = new URL(response.url, window.location.href);
             const contentType = response.headers.get('content-type') || 'unknown content type';
             throw new Error(
@@ -585,12 +582,6 @@
         signedInCustomer = false;
         savedRelationshipStartDate = null;
         refreshDateReminders();
-        if (window.location.protocol === 'file:') {
-            accountAuthPanel.classList.remove('hidden');
-            accountMessage.textContent = 'Sign-in needs the Petal Ph backend. Open the deployed site or run the backend locally.';
-            accountStatusReady = true;
-            return;
-        }
         try {
             const response = await fetch('/api/auth/me', { credentials: 'same-origin' });
             const data = await readAuthResponse(response);
@@ -820,12 +811,6 @@
     accountForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         if (!accountForm.reportValidity()) return;
-        if (window.location.protocol === 'file:') {
-            accountPassword.value = '';
-            accountMessage.textContent = 'Sign-in needs the Petal Ph backend. Open the deployed site or run the backend locally.';
-            return;
-        }
-
         accountSubmit.disabled = true;
         accountMessage.textContent = 'Connecting securely...';
         try {

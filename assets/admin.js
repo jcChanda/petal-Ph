@@ -16,16 +16,6 @@
         maximumFractionDigits: 2
     });
 
-    if (window.location.protocol === 'file:') {
-        dashboardMessage.textContent = 'The admin dashboard needs the Petal Ph backend and cannot run by opening this file directly. Open the deployed site and visit /admin, or run the FastAPI backend locally.';
-        productForm.querySelectorAll('input, select, textarea, button').forEach((control) => {
-            control.disabled = true;
-        });
-        document.getElementById('refresh-orders').disabled = true;
-        document.getElementById('dashboard-signout').disabled = true;
-        return;
-    }
-
     async function apiRequest(path, options = {}) {
         const response = await fetch(path, {
             ...options,
