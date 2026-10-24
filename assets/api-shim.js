@@ -1,5 +1,5 @@
 (() => {
-  const KEY = 'petal_ph_db_v1';
+  const KEY = 'petal_ph_db_v2';
   const SESSION = 'petal_ph_session';
   function load() {
     let d = null;
