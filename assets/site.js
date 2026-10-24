@@ -552,10 +552,13 @@
         try {
             data = JSON.parse(responseText);
         } catch {
+            if (window.location.protocol === 'file:') {
+                throw new Error('Sign-in is unavailable in the local file preview. Open the deployed Petal Ph site or run its backend.');
+            }
+            const responseUrl = new URL(response.url, window.location.href);
+            const contentType = response.headers.get('content-type') || 'unknown content type';
             throw new Error(
-                window.location.protocol === 'file:'
-                    ? 'Sign-in is unavailable in the local file preview. Open the deployed Petal Ph site or run its backend.'
-                    : 'The account server returned an unexpected response. Check that the Petal Ph backend is running.'
+                `The account endpoint ${responseUrl.pathname} returned HTTP ${response.status} as ${contentType}, not JSON. Open Petal Ph through its running backend and try again.`
             );
         }
         if (!response.ok) {
