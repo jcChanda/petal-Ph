@@ -1,5 +1,5 @@
 (() => {
-  const KEY = 'petal_ph_db_v5';
+  const KEY = 'petal_ph_db_v6';
   const SESSION = 'petal_ph_session';
   function load() {
     let d = null;
@@ -8,7 +8,6 @@
       d = { users: [{email:'petalphofficial@gmail.com',password:'admin1234567891235',role:'admin'}],
         products: [
           {id:'sunday-garden',name:'Sunday in the Garden',description:'Garden rose, sweet pea & seasonal greens',category:'bouquets',price:68,image:'assets/sunday-in-the-garden.png',available:true,created_at:new Date().toISOString()},
-          {id:'a-little-wild',name:'A Little Wild',description:'A flower-filled surprise, wrapped up with love',category:'seasonal',price:54,image:'assets/a-little-wild.png',available:true,created_at:new Date().toISOString()},
           {id:'golden-hour',name:'The Golden Hour',description:'Velvety blue roses in a statement arrangement',category:'bouquets',price:72,image:'assets/blue-roses.png',available:true,created_at:new Date().toISOString()},
           {id:'friday-flowers',name:'Flowers, Every Friday',description:'Classic ivory roses with a soft, lovely finish',category:'subscriptions',price:48,image:'assets/white-roses.png',available:true,created_at:new Date().toISOString()},
           {id:'berry-bouquet',name:'Berry Bouquet',description:'Sweet berry tones and soft petals',category:'bouquets',price:60,image:'assets/berry-bouquet.png',available:true,created_at:new Date().toISOString()},
@@ -20,7 +19,6 @@
           {id:'money-bouquet',name:'Money Bouquet',description:'Flowers with a gift of cash',category:'seasonal',price:90,image:'assets/money-bouquet.png',available:true,created_at:new Date().toISOString()},
           {id:'signature',name:'Signature Bouquet',description:'Our signature arrangement',category:'bouquets',price:78,image:'assets/signature-bouquet.png',available:true,created_at:new Date().toISOString()},
           {id:'sunny-days',name:'Sunny Days Subscription',description:'A sunny weekly flower subscription',category:'subscriptions',price:45,image:'assets/sunny-days-subscription.png',available:true,created_at:new Date().toISOString()},
-          {id:'tulips',name:'Tulip Collection',description:'A collection of fresh tulips',category:'seasonal',price:55,image:'assets/tulip-collection.png',available:true,created_at:new Date().toISOString()}
         ],
         orders: []
       };
